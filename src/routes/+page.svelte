@@ -1,6 +1,41 @@
-<script>
+<script lang="ts">
+	import { browser } from '$app/environment';
+	import { applyAction, enhance } from '$app/forms';
+	import { goto, invalidateAll } from '$app/navigation';
 	import chatbg from '$lib/assets/chat-background.png';
 	import send from '$lib/assets/send.png';
+
+    export let form;
+    let messages = [
+        "Need help with deciding what to eat? Tell me what you like and I will pick out some meals you can eat right now in your area. When we're done, I can even plan out your route!",
+    ];
+    $: if (form) {
+        messages = form.messages;
+    }
+    let waitingForAI = false;
+    let messagesJson = JSON.stringify(messages);
+    $: messagesJson = JSON.stringify(messages);
+
+    let currentMessage = "";
+
+    let lat: number | "" = "";
+    let lng: number | "" = "";
+
+    if (browser) {
+        if (navigator?.geolocation) {
+            navigator.permissions.query({ name: "geolocation" }).then((result) => {
+                if (result.state === "granted" || result.state === "prompt") {
+                    navigator.geolocation.getCurrentPosition((position) => {
+                        lat = position.coords.latitude;
+                        lng = position.coords.longitude;
+                    });
+                }
+                // Don't do anything if the permission was denied.
+            });
+        }
+    }
+
+    const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 </script>
 
 <h1>Party Planner</h1>
@@ -9,10 +44,44 @@
 <section id="chatbox">
     <div id="chatbox-messages">
         <img src={chatbg} alt="chat background">
+        {#each messages as message, i}
+            {#if i % 2 == 0}
+                <div class="ai-msg">
+                    <p>{message}</p>
+                </div>
+            {:else}
+                <div class="user-msg">
+                    <p>{message}</p>
+                </div>
+            {/if}
+        {/each}
+        {#if waitingForAI}
+            {#await delay(1000) then}
+                <div class="ai-msg">
+                    <p>Loading</p>
+                </div>
+            {/await}
+        {/if}
     </div>
-    <form id="message-bar" method="post">
-        <input type="text" id="text-box" required>
-        <button type="submit"><img src={send} alt="send"></button>
+    <form id="message-bar" method="post" use:enhance={() => {
+        messages.push(currentMessage);
+        messages = messages;
+        currentMessage = "";
+        waitingForAI = true;
+        return async ({ result }) => {
+            waitingForAI = false;
+            if (result.type === 'redirect') {
+				goto(result.location);
+			} else {
+				await applyAction(result);
+			}
+        };
+    }}>
+        <input type=hidden name="lat" value={lat}>
+        <input type=hidden name="lng" value={lng}>
+        <input type=hidden name="messages" bind:value={messagesJson}>
+        <input type=text id="text-box" name="user-message" required placeholder="Type here" bind:value={currentMessage} disabled={waitingForAI}>
+        <button type="submit" disabled={waitingForAI}><img src={send} alt="send"></button>
     </form>
 </section>
 
@@ -36,8 +105,6 @@
         top: 22vh;
         bottom: 2vh;
         width: min(35rem, 100vw - 2rem);
-        /* padding-left: 2rem; */
-        /* padding-right: 2rem; */
         display: flex;
         flex-direction: column;
     }
@@ -45,9 +112,7 @@
     #chatbox-messages {
         border-radius: 20px 20px 0px 0px;
         width: 100%;
-        /* object-fit: cover; */
         height: 100%;
-        /* background-color: wheat; */
     }
 
     #chatbox-messages img {
@@ -55,11 +120,10 @@
         border-radius: 20px 20px 0px 0px;
         height: calc(100% - 4rem);        
         width: min(35rem, 100vw - 2rem);
-        /* right: 1000px; */
         object-fit: cover;
-        /* height: 100%; */
         filter: saturate(20%) brightness(65%) contrast(130%);
         opacity: 90%;
+        z-index: -1;
     }
 
     #message-bar {
@@ -97,5 +161,32 @@
     #message-bar button img {
         object-fit: cover;
         height: 100%;
+    }
+
+    .ai-msg p {
+        background-color: hsl(254, 49%, 20%);
+        padding: 0.7rem;
+        border-radius: 20px;
+        color: white;
+        width: fit-content;
+    }
+
+    .ai-msg {
+        margin: 1rem 7rem 1rem 1rem;
+    }
+
+    .user-msg p {
+        background-color: hsl(125, 76%, 39%);
+        padding: 0.7rem;
+        border-radius: 20px;
+        color: white;
+        width: fit-content;
+    }
+
+    .user-msg {
+        display: flex;
+        justify-content: end;
+        flex-direction: row;
+        margin: 1rem 1rem 1rem 7rem;
     }
 </style>
