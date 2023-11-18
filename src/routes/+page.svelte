@@ -5,12 +5,15 @@
 	import chatbg from '$lib/assets/chat-background.png';
 	import send from '$lib/assets/send.png';
 
+    export let data;
     export let form;
     let messages = [
         "Need help with deciding what to eat? Tell me what you like and I will pick out some meals you can eat right now in your area. When we're done, I can even plan out your route!",
     ];
     $: if (form) {
         messages = form.messages;
+    } else if (data.messages) {
+        messages = data.messages;
     }
     let waitingForAI = false;
     let messagesJson = JSON.stringify(messages);
@@ -164,6 +167,7 @@
     }
 
     .ai-msg p {
+        font-weight: lighter;
         background-color: hsl(254, 49%, 20%);
         padding: 0.7rem;
         border-radius: 20px;
@@ -176,6 +180,7 @@
     }
 
     .user-msg p {
+        font-weight: lighter;
         background-color: hsl(125, 76%, 39%);
         padding: 0.7rem;
         border-radius: 20px;

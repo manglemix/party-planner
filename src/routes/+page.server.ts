@@ -4,11 +4,19 @@ import { error } from '@sveltejs/kit';
 const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
 
-export async function load({ cookies }) {
-	let sessionToken = cookies.get("sessionToken");
+export async function load(event) {
+	let sessionToken = event.cookies.get("sessionToken");
     if (sessionToken === undefined) {
         sessionToken = crypto.randomUUID();
-        cookies.set("sessionToken", sessionToken);
+        event.cookies.set("sessionToken", sessionToken);
+    }
+
+    try {
+        const response = await event.fetch("http://127.0.0.1:8000/load-messages");
+        const messages: string[] = [];
+        return { messages };
+    } catch (error) {
+        return { };
     }
 }
 
@@ -48,15 +56,15 @@ export const actions = {
 
         const body = JSON.stringify(bodyJson);
 
-        // let response;
-        // try {
-        //     response = await event.fetch("http://127.0.0.1:8000/new-message", { method: "post", body });
-        // } catch (error) {
-        //     console.log(messages);
-        //     return { errMsg: "failed to fetch", messages };
-        // }
-
+        let response;
         await delay(3000);
+        try {
+            response = await event.fetch("http://127.0.0.1:8000/new-message", { method: "post", body });
+        } catch (error) {
+            messages.push("I seemed to have faced an issue. Please try again later.");
+            return { errMsg: "failed to fetch", messages };
+        }
+
         messages.push("lmao");
         return {
             messages
