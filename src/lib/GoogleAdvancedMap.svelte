@@ -3,6 +3,20 @@
     import { Loader } from "@googlemaps/js-api-loader"
     export let lat: number;
     export let lng: number;
+    export let waypoints: string[] = [];
+    export let origin = "Ann Arbor, MI";
+    export let destination = "Salt Lake City, UT";
+
+    export let url = "https://www.google.com/maps/dir/";
+
+    url += "+" + origin.replace(" ", "+")
+
+    for (const waypoint of waypoints) {
+        url += "/+" + waypoint.replace(" ", "+");
+    }
+
+    url += "/+" + destination.replace(" ", "+");
+
     // export let markers: {
     //     lat: number;
     //     lng: number;
@@ -35,8 +49,8 @@
             });
             directionsService
                 .route({
-                origin: "Ann Arbor, MI",
-                destination: "Salt Lake City, UT",
+                origin,
+                destination,
                 waypoints: [
                     // { location: "Adelaide, SA" },
                     // { location: "Broken Hill, NSW" },
@@ -70,20 +84,28 @@
     }
   </script>
 
-<div id="mapContainer">
-    <div bind:this={mapDiv} style="width: 100%; height: 100%;" />
-    <div bind:this={directionsDiv} id="directions" />
-</div>
+<div bind:this={mapDiv} style="width: 100%; height: 100%;" />
+<div bind:this={directionsDiv} id="directions" />
+<!-- <div id="mapContainer">
+</div> -->
 
 <style>
-    #mapContainer {
+    /* #mapContainer {
         display: flex;
         flex-direction: row;
         overflow-y: hidden;
+    } */
+
+    #directions {
+        /* width: 0px; */
+        /* overflow-x: hidden; */
+        display: none;
+        /* overflow-y: scroll;
+        background-color: aliceblue;
+        padding: 0.5rem; */
     }
 
-    #mapContainer #directions {
-        overflow-y: scroll;
-        
-    }
+    /* #mapContainer #directions :global(*) {
+        color: black;
+    } */
 </style>
