@@ -3,6 +3,7 @@
 	import GoogleAdvancedMap from '$lib/GoogleAdvancedMap.svelte';
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
+	import { PUBLIC_BACKEND_HOST } from '$env/static/public';
     export let data;
 	let url: string;
 
@@ -22,7 +23,7 @@
 	const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
     if (browser) {
-        fetch("https://cb3d-35-3-152-108.ngrok-free.app/final-plan/", { method: "post", body: JSON.stringify({ sessionToken: data.sessionToken, lat: data.lat, lng: data.lng }) })
+        fetch(`https://${PUBLIC_BACKEND_HOST}/final-plan/`, { method: "post", body: JSON.stringify({ sessionToken: data.sessionToken, lat: data.lat, lng: data.lng }) })
             .then(async (response) => {
                 if (!response.ok) {
                     const text = await response.text();
@@ -40,7 +41,6 @@
                     });
                     return;
                 }
-                console.log(places);
                 let startCount = 0;
                 let i = 0;
                 while (true) {

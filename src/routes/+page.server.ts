@@ -1,3 +1,4 @@
+import { PUBLIC_BACKEND_HOST } from '$env/static/public';
 import { error, redirect } from '@sveltejs/kit';
 
 // const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
@@ -75,7 +76,7 @@ export const actions = {
 
 		let response;
 		try {
-			response = await event.fetch('https://cb3d-35-3-152-108.ngrok-free.app/new-message/', {
+			response = await event.fetch(`https://${PUBLIC_BACKEND_HOST}/new-message/`, {
 				method: 'post',
 				body: JSON.stringify(bodyJson)
 			});

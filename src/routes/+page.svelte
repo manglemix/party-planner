@@ -7,6 +7,7 @@
 	import loadingMsg from '$lib/assets/loading-msg.gif';
 	import { scale, fade } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
+	import { PUBLIC_BACKEND_HOST } from '$env/static/public';
 
 	const scrollOptions: ScrollToOptions = { top: 100000000, behavior: 'smooth' };
 
@@ -41,7 +42,7 @@
 
 	if (browser && messages.length == 0) {
 		waitingForAI = true;
-		fetch('https://cb3d-35-3-152-108.ngrok-free.app/new-message/', {
+		fetch(`https://${PUBLIC_BACKEND_HOST}/new-message/`, {
 				method: 'post',
 				body: JSON.stringify({
 					userMessage: "",
