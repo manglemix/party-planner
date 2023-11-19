@@ -27,7 +27,7 @@
 		display: flex;
 		flex-direction: column;
 		background-color: hsl(210, 85%, 5%);
-		padding: 1rem 3rem 0rem 3rem;
+		padding: 0.5rem 3rem 0rem 3rem;
 		box-shadow: 0px 0px 100px hsl(210, 30%, 29%);
 	}
 </style>

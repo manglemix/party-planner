@@ -1,6 +1,6 @@
 import { error } from '@sveltejs/kit';
 
-const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
+// const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 export async function load(event) {
 	let sessionToken = event.cookies.get('sessionToken');
@@ -10,8 +10,11 @@ export async function load(event) {
 	}
 
 	try {
-		const response = await event.fetch('http://127.0.0.1:8000/load-messages');
-		const messages: string[] = [];
+		const response = await event.fetch('https://7be5-35-3-152-108.ngrok-free.app/load-messages/');
+		const messages: string[] = await response.json();
+		if (messages.length == 0) {
+			return {};
+		}
 		return { messages };
 	} catch (error) {
 		return {};

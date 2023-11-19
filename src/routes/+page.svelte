@@ -103,13 +103,16 @@
 					chatboxMessages.scrollTo(scrollOptions);
 				});
 				return async ({ result }) => {
-					waitingForAI = false;
-					placeholder = 'Type here';
 					if (result.type === 'redirect') {
 						goto(result.location);
 					} else {
 						await applyAction(result);
+						if (form?.done) {
+							return;
+						}
 					}
+					waitingForAI = false;
+					placeholder = 'Type here';
 				};
 			}}
 		>

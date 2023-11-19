@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { Loader } from '@googlemaps/js-api-loader';
-	export let lat: number;
-	export let lng: number;
 	export let waypoints: string[] = [];
 	export let origin = 'Ann Arbor, MI';
 	export let destination = 'Salt Lake City, UT';
@@ -17,12 +15,6 @@
 
 	url += '/+' + destination.replace(' ', '+');
 
-	// export let markers: {
-	//     lat: number;
-	//     lng: number;
-	//     instances: number;
-	//     supercategory: string;
-	// }[];
 	let mapDiv: HTMLElement;
 	let directionsDiv: HTMLElement;
 
@@ -38,7 +30,6 @@
 				const { Map } = await loader.importLibrary('maps');
 
 				const map = new Map(mapDiv, {
-					center: { lat, lng },
 					zoom: 10,
 					mapId: '4504f8b37365c3d0'
 				});
