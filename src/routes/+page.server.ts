@@ -46,6 +46,8 @@ export const actions = {
 
 		const lat = formData.get('lat')?.toString() ?? '';
 		const lng = formData.get('lng')?.toString() ?? '';
+		event.cookies.set('lat', lat);
+		event.cookies.set('lng', lng);
 
 		if (lat !== '') {
 			bodyJson['lat'] = lat;
@@ -74,8 +76,7 @@ export const actions = {
 
 		return {
 			messages,
-			// done: responseJson["done"] ?? false
-			done: true
+			done: responseJson["done"] ?? false
 		};
 	}
 };

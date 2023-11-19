@@ -5,7 +5,11 @@ export async function load(event) {
 	if (sessionToken === undefined) {
 		throw redirect(307, '/');
 	}
+	const lat = event.cookies.get('lat');
+	const lng = event.cookies.get('lng');
 	return {
-		sessionToken
+		sessionToken,
+		lat,
+		lng
 	};
 }

@@ -8,6 +8,8 @@
 
 	let informationLoaded = false;
     let errorFaced = false;
+    let waypoints: string[] = [];
+    let mode = "";
     $: if (errorFaced) {
         delay(2500).then(() => {
             goto("/");
@@ -17,7 +19,7 @@
 	const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
     if (browser) {
-        fetch("https://7be5-35-3-152-108.ngrok-free.app/final-plan/", { method: "post", body: JSON.stringify({ sessionToken: data.sessionToken }) })
+        fetch("https://7be5-35-3-152-108.ngrok-free.app/final-plan/", { method: "post", body: JSON.stringify({ sessionToken: data.sessionToken, lat: data.lat, lng: data.lng }) })
             .then((response) => {
                 if (!response.ok) {
                     response.text().then((text) => {
@@ -27,7 +29,11 @@
                     errorFaced = true;
                     return;
                 }
-                informationLoaded = true;
+                response.json().then((body) => {
+                    waypoints = body["waypoints"];
+                    mode = body["mode"];
+                    informationLoaded = true;
+                });
             })
             .catch((e) => {
                 console.log(e);
@@ -48,7 +54,7 @@
 		</h2>
 
         <div id="mapContainer">
-            <GoogleAdvancedMap bind:url />
+            <GoogleAdvancedMap bind:url bind:waypoints />
         </div>
 	{:else}
         <noscript>
@@ -286,7 +292,7 @@
 		font-size: min(2.5vh, 4vw);
 		background-color: hsl(254, 49%, 20%);
 		padding: 0.7rem;
-		border-radius: 20px;
+		border-radius: 20px 20px 20px 0px;
 		align-self: flex-start;
 	}
 

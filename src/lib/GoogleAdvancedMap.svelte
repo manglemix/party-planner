@@ -1,19 +1,17 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { Loader } from '@googlemaps/js-api-loader';
-	export let waypoints: string[] = [];
-	export let origin = 'Ann Arbor, MI';
-	export let destination = 'Salt Lake City, UT';
+	export let waypoints: string[];
+	export let mode: string;
 
-	export let url = 'https://www.google.com/maps/dir/';
+	export let url = 'https://www.google.com/maps/dir';
 
-	url += '+' + origin.replace(' ', '+');
+	// url += '+' + origin.replace(' ', '+');
 
 	for (const waypoint of waypoints) {
 		url += '/+' + waypoint.replace(' ', '+');
 	}
-
-	url += '/+' + destination.replace(' ', '+');
+	url += '/+' + waypoints[0].replace(' ', '+');
 
 	let mapDiv: HTMLElement;
 	let directionsDiv: HTMLElement;
@@ -40,16 +38,24 @@
 					map,
 					panel: directionsDiv
 				});
+				let travelMode;
+
+				if (mode === "walking") {
+					travelMode = TravelMode.WALKING;
+				} else if (mode === "bicycling") {
+					travelMode = TravelMode.BICYCLING;
+				} else if (mode === "transit") {
+					travelMode = TravelMode.TRANSIT;
+				} else {
+					travelMode = TravelMode.DRIVING;
+				}
+
 				directionsService
 					.route({
-						origin,
-						destination,
-						waypoints: [
-							// { location: "Adelaide, SA" },
-							// { location: "Broken Hill, NSW" },
-						],
-						travelMode: TravelMode.DRIVING,
-						avoidTolls: true
+						origin: waypoints[0],
+						destination: waypoints[0],
+						waypoints: waypoints.slice(1).map((value) => { return { location: value }; }),
+						travelMode,
 					})
 					.then((result) => {
 						directionsRenderer.setDirections(result);
