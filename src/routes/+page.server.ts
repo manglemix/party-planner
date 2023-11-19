@@ -55,7 +55,7 @@ export const actions = {
 
 		let response;
 		try {
-			response = await event.fetch('https://a74c-35-3-152-108.ngrok-free.app/new-message/', {
+			response = await event.fetch('https://7be5-35-3-152-108.ngrok-free.app/new-message/', {
 				method: 'post',
 				body
 			});

@@ -1,9 +1,14 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { applyAction, enhance } from '$app/forms';
-	import { goto, invalidateAll } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import chatbg from '$lib/assets/chat-background.png';
 	import send from '$lib/assets/send.png';
+	import loadingMsg from '$lib/assets/loading-msg.gif';
+	import { scale } from 'svelte/transition';
+	import { quintOut } from 'svelte/easing';
+
+	const scrollOptions: ScrollToOptions = { top: 100000000, behavior: "smooth" };
 
 	export let data;
 	export let form;
@@ -18,7 +23,7 @@
 		}
 		if (chatboxMessages) {
 			delay(100).then(() => {
-				chatboxMessages.scrollTo({ top: 100000000 });
+				chatboxMessages.scrollTo(scrollOptions);
 			});
 		}
 	}
@@ -48,6 +53,7 @@
 	const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 	let chatboxMessages: HTMLElement;
+    const scaleTransition = { duration: 400, delay: 0, opacity: 1, start: 0, easing: quintOut };
 </script>
 
 <h1>Party Planner</h1>
@@ -59,19 +65,19 @@
 		{#each messages as message, i}
 			{#if i % 2 == 0}
 				<div class="ai-msg">
-					<p>{message}</p>
+					<p transition:scale|global={scaleTransition}>{message}</p>
 				</div>
 			{:else}
 				<div class="user-msg">
-					<p>{message}</p>
+					<p transition:scale|global={scaleTransition}>{message}</p>
 				</div>
 			{/if}
 		{/each}
 		{#if waitingForAI}
 			{#await delay(1000) then}
-				<div class="ai-msg">
-					<p>Loading</p>
-				</div>
+                <div class="ai-msg">
+                    <div transition:scale={scaleTransition}><img src={loadingMsg} alt="loading message"></div>
+                </div>
 			{/await}
 		{/if}
 	</div>
@@ -83,6 +89,9 @@
 			messages = messages;
 			currentMessage = '';
 			waitingForAI = true;
+			delay(1100).then(() => {
+				chatboxMessages.scrollTo(scrollOptions);
+			});
 			return async ({ result }) => {
 				waitingForAI = false;
 				if (result.type === 'redirect') {
@@ -140,7 +149,7 @@
 		overflow-y: scroll;
 	}
 
-	#chatbox-messages img {
+	#chatbox-messages > img {
 		position: absolute;
 		border-radius: 20px 20px 0px 0px;
 		height: calc(100% - 4rem);
@@ -197,6 +206,19 @@
 		width: fit-content;
 	}
 
+    .ai-msg > div {
+		background-color: hsl(254, 49%, 20%);
+		padding: 0.7rem;
+		border-radius: 20px 20px 20px 0px;
+        width: fit-content;
+    }
+
+    .ai-msg > div > img {
+        filter: saturate(0%) brightness(100%) contrast(0%);
+        height: 1.5rem;
+		object-fit: cover;
+    }
+
 	.ai-msg {
 		margin: 1rem 7rem 1rem 1rem;
 	}
@@ -215,41 +237,5 @@
 		justify-content: end;
 		flex-direction: row;
 		margin: 1rem 1rem 1rem 7rem;
-	}
-
-	.loader-dots {
-		padding: 0.5em 2.2em 0.5em 1em;
-		border-radius: 0.3em;
-		color: #fff;
-		border: 1px solid #fff;
-		background: rgba(255, 255, 255, 0.2);
-		display: block;
-		position: fixed;
-		top: 50%;
-		left: 50%;
-		transform: translateX(-50%) translateY(-50%);
-		font:
-			300 1em/1.5 'Lato',
-			sans-serif;
-		letter-spacing: 1px;
-		&:after {
-			content: '....';
-			width: 0;
-			position: absolute;
-			overflow: hidden;
-			animation: loader-dots-animation 1s infinite;
-		}
-	}
-
-	@keyframes loader-dots-animation {
-		0% {
-			width: 0em;
-		}
-		50% {
-			width: 1.2em;
-		}
-		100% {
-			width: 0em;
-		}
 	}
 </style>

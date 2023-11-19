@@ -12,7 +12,7 @@
 </h2>
 
 <noscript>
-	<h2>You seem to have disabled javascript. I will not be able to show you my idea!</h2>
+	<h2>You seem to have disabled javascript. I will not be able to show you the route here!</h2>
 </noscript>
 
 {#if lat && lng}
