@@ -13,19 +13,16 @@
 	export let data;
 	export let form;
 	let placeholder = 'Type here';
-	let messages = [
-		"Need help with deciding what to eat? Tell me what you like and I will pick out some meals you can eat right now in your area. When we're done, I can even plan out your route!"
-	];
+	let messages: string[] = [];
 	$: {
 		if (form) {
-			messages = form.messages;
-			if (browser && form.done) {
-				delay(3000).then(() => {
-					goto('/plan');
-				});
+			if (form.done) {
+				goto("/plan");
+			} else {
+				messages = form.messages;
 			}
-		} else if (data.messages) {
-			messages = data.messages;
+		// } else if (data.messages) {
+		// 	messages = data.messages;
 		}
 		if (chatboxMessages) {
 			delay(100).then(() => {
@@ -36,6 +33,28 @@
 	let waitingForAI = false;
 	let messagesJson = JSON.stringify(messages);
 	$: messagesJson = JSON.stringify(messages);
+
+	if (browser && messages.length == 0) {
+		waitingForAI = true;
+		fetch('https://cb3d-35-3-152-108.ngrok-free.app/new-message/', {
+				method: 'post',
+				body: JSON.stringify({
+					userMessage: "",
+					sessionToken: data.sessionToken
+				})
+			}).then(async (response) => {
+				const responseJson = await response.json();
+				messages.push(responseJson['msg']);
+				messages = messages;
+				waitingForAI = false;
+			})
+			.catch((e) => {
+				console.log(e);
+				messages.push('I seemed to have faced an issue. Please try again later.');
+				messages = messages;
+				waitingForAI = false;
+			});
+	}
 
 	let currentMessage = '';
 
@@ -80,7 +99,7 @@
 					</div>
 				{/if}
 			{/each}
-			{#if waitingForAI}
+			{#if waitingForAI && !form?.done}
 				{#await delay(1000) then}
 					<div class="ai-msg">
 						<div transition:scale={scaleTransition}>
@@ -89,6 +108,11 @@
 					</div>
 				{/await}
 			{/if}
+			<!-- {#if form?.done}
+				<div class="ai-msg">
+					<p transition:scale|global={scaleTransition}>I would love to show you the plan I have with this <a href="/plan">link.</a></p>
+				</div>
+			{/if} -->
 		</div>
 		<form
 			id="message-bar"

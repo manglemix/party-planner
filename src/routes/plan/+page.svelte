@@ -8,18 +8,20 @@
 
 	let informationLoaded = false;
     let errorFaced = false;
+    let noPath = false;
     let waypoints: string[] = [];
     let mode = "";
+    let lastMessage = "";
     $: if (errorFaced) {
         delay(2500).then(() => {
-            goto("/");
+            goto("/?reset=true");
         });
     }
 
 	const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
     if (browser) {
-        fetch("https://7be5-35-3-152-108.ngrok-free.app/final-plan/", { method: "post", body: JSON.stringify({ sessionToken: data.sessionToken, lat: data.lat, lng: data.lng }) })
+        fetch("https://cb3d-35-3-152-108.ngrok-free.app/final-plan/", { method: "post", body: JSON.stringify({ sessionToken: data.sessionToken, lat: data.lat, lng: data.lng }) })
             .then((response) => {
                 if (!response.ok) {
                     response.text().then((text) => {
@@ -31,7 +33,14 @@
                 }
                 response.json().then((body) => {
                     waypoints = body["waypoints"];
+                    if (waypoints.length == 0) {
+                        noPath = true;
+                        delay(2500).then(() => {
+                            goto("/?reset=true");
+                        });
+                    }
                     mode = body["mode"];
+                    lastMessage = body["lastMessage"];
                     informationLoaded = true;
                 });
             })
@@ -47,14 +56,19 @@
         <h2>
             I seem to have faced an issue. Let's try this again shall we?
         </h2>
-	{:else if informationLoaded}
+	{:else if noPath}
+        <h2>
+            I'm sorry, but I can't seem to find a route that fits your needs. Let's find something else
+            that you'd like!
+        </h2>
+    {:else if informationLoaded}
 		<h2>
-			Here is my <a href={url}>suggestion</a>. If you want to make another plan, click
-			<a href="/">here.</a>
+			{lastMessage} If you want to make another plan, click
+			<a href="/?reset=true">here.</a>
 		</h2>
 
         <div id="mapContainer">
-            <GoogleAdvancedMap bind:url bind:waypoints />
+            <GoogleAdvancedMap bind:url bind:waypoints bind:mode />
         </div>
 	{:else}
         <noscript>
@@ -289,7 +303,7 @@
 	h2 {
 		font-weight: lighter;
 		margin-top: 1rem;
-		font-size: min(2.5vh, 4vw);
+		font-size: min(2.5vh, 3vw);
 		background-color: hsl(254, 49%, 20%);
 		padding: 0.7rem;
 		border-radius: 20px 20px 20px 0px;
@@ -297,9 +311,11 @@
 	}
 
 	#mapContainer {
-		position: fixed;
-		top: 12vh;
-		bottom: 2vh;
+		/* position: fixed; */
+		/* top: 12vh; */
+		/* bottom: 2vh; */
+        margin-top: 1rem;
+        height: calc(100% - 15rem);
 		width: min(50rem, 100vw - 2rem);
 		display: flex;
 		flex-direction: column;

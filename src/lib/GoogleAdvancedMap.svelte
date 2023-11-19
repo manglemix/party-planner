@@ -14,7 +14,7 @@
 	url += '/+' + waypoints[0].replace(' ', '+');
 
 	let mapDiv: HTMLElement;
-	let directionsDiv: HTMLElement;
+	// let directionsDiv: HTMLElement;
 
 	if (browser) {
 		const loader = new Loader({
@@ -36,7 +36,7 @@
 				const directionsRenderer = new DirectionsRenderer({
 					draggable: true,
 					map,
-					panel: directionsDiv
+					// panel: directionsDiv
 				});
 				let travelMode;
 
@@ -82,27 +82,31 @@
 	}
 </script>
 
-<div bind:this={mapDiv} style="width: 100%; height: 100%;" />
-<div bind:this={directionsDiv} id="directions" />
+<div bind:this={mapDiv} style="width: 100%; height: 100%;" id="map"/>
+<!-- <div bind:this={directionsDiv} id="directions" /> -->
 
 <!-- <div id="mapContainer">
 </div> -->
 
 <style>
+	#map {
+		height: 100%;
+		width: 100%;
+	}
 	/* #mapContainer {
         display: flex;
         flex-direction: row;
         overflow-y: hidden;
     } */
 
-	#directions {
+	/* #directions {
 		/* width: 0px; */
 		/* overflow-x: hidden; */
-		display: none;
+		/* display: none; */
 		/* overflow-y: scroll;
         background-color: aliceblue;
         padding: 0.5rem; */
-	}
+	
 
 	/* #mapContainer #directions :global(*) {
         color: black;
