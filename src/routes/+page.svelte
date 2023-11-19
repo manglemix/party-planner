@@ -5,193 +5,251 @@
 	import chatbg from '$lib/assets/chat-background.png';
 	import send from '$lib/assets/send.png';
 
-    export let data;
-    export let form;
-    let messages = [
-        "Need help with deciding what to eat? Tell me what you like and I will pick out some meals you can eat right now in your area. When we're done, I can even plan out your route!",
-    ];
-    $: if (form) {
-        messages = form.messages;
-    } else if (data.messages) {
-        messages = data.messages;
-    }
-    let waitingForAI = false;
-    let messagesJson = JSON.stringify(messages);
-    $: messagesJson = JSON.stringify(messages);
+	export let data;
+	export let form;
+	let messages = [
+		"Need help with deciding what to eat? Tell me what you like and I will pick out some meals you can eat right now in your area. When we're done, I can even plan out your route!"
+	];
+	$: {
+		if (form) {
+			messages = form.messages;
+		} else if (data.messages) {
+			messages = data.messages;
+		}
+		if (chatboxMessages) {
+			delay(100).then(() => {
+				chatboxMessages.scrollTo({ top: 100000000 });
+			});
+		}
+	}
+	let waitingForAI = false;
+	let messagesJson = JSON.stringify(messages);
+	$: messagesJson = JSON.stringify(messages);
 
-    let currentMessage = "";
+	let currentMessage = '';
 
-    let lat: number | "" = "";
-    let lng: number | "" = "";
+	let lat = 42.2808;
+	let lng = -83.743;
 
-    if (browser) {
-        if (navigator?.geolocation) {
-            navigator.permissions.query({ name: "geolocation" }).then((result) => {
-                if (result.state === "granted" || result.state === "prompt") {
-                    navigator.geolocation.getCurrentPosition((position) => {
-                        lat = position.coords.latitude;
-                        lng = position.coords.longitude;
-                    });
-                }
-                // Don't do anything if the permission was denied.
-            });
-        }
-    }
+	if (browser) {
+		if (navigator?.geolocation) {
+			navigator.permissions.query({ name: 'geolocation' }).then((result) => {
+				if (result.state === 'granted' || result.state === 'prompt') {
+					navigator.geolocation.getCurrentPosition((position) => {
+						lat = position.coords.latitude;
+						lng = position.coords.longitude;
+					});
+				}
+				// Don't do anything if the permission was denied.
+			});
+		}
+	}
 
-    const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
+	const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
+
+	let chatboxMessages: HTMLElement;
 </script>
 
 <h1>Party Planner</h1>
 <h2>Create a complete plan, fit for any time, with just a simple conversation!</h2>
 
 <section id="chatbox">
-    <div id="chatbox-messages">
-        <img src={chatbg} alt="chat background">
-        {#each messages as message, i}
-            {#if i % 2 == 0}
-                <div class="ai-msg">
-                    <p>{message}</p>
-                </div>
-            {:else}
-                <div class="user-msg">
-                    <p>{message}</p>
-                </div>
-            {/if}
-        {/each}
-        {#if waitingForAI}
-            {#await delay(1000) then}
-                <div class="ai-msg">
-                    <p>Loading</p>
-                </div>
-            {/await}
-        {/if}
-    </div>
-    <form id="message-bar" method="post" use:enhance={() => {
-        messages.push(currentMessage);
-        messages = messages;
-        currentMessage = "";
-        waitingForAI = true;
-        return async ({ result }) => {
-            waitingForAI = false;
-            if (result.type === 'redirect') {
-				goto(result.location);
-			} else {
-				await applyAction(result);
-			}
-        };
-    }}>
-        <input type=hidden name="lat" value={lat}>
-        <input type=hidden name="lng" value={lng}>
-        <input type=hidden name="messages" bind:value={messagesJson}>
-        <input type=text id="text-box" name="user-message" required placeholder="Type here" bind:value={currentMessage} disabled={waitingForAI}>
-        <button type="submit" disabled={waitingForAI}><img src={send} alt="send"></button>
-    </form>
+	<div id="chatbox-messages" bind:this={chatboxMessages}>
+		<img src={chatbg} alt="chat background" />
+		{#each messages as message, i}
+			{#if i % 2 == 0}
+				<div class="ai-msg">
+					<p>{message}</p>
+				</div>
+			{:else}
+				<div class="user-msg">
+					<p>{message}</p>
+				</div>
+			{/if}
+		{/each}
+		{#if waitingForAI}
+			{#await delay(1000) then}
+				<div class="ai-msg">
+					<p>Loading</p>
+				</div>
+			{/await}
+		{/if}
+	</div>
+	<form
+		id="message-bar"
+		method="post"
+		use:enhance={() => {
+			messages.push(currentMessage);
+			messages = messages;
+			currentMessage = '';
+			waitingForAI = true;
+			return async ({ result }) => {
+				waitingForAI = false;
+				if (result.type === 'redirect') {
+					goto(result.location);
+				} else {
+					await applyAction(result);
+				}
+			};
+		}}
+	>
+		<input type="hidden" name="lat" value={lat} />
+		<input type="hidden" name="lng" value={lng} />
+		<input type="hidden" name="messages" bind:value={messagesJson} />
+		<input
+			type="text"
+			id="text-box"
+			name="user-message"
+			required
+			placeholder="Type here"
+			bind:value={currentMessage}
+			disabled={waitingForAI}
+		/>
+		<button type="submit" disabled={waitingForAI}><img src={send} alt="send" /></button>
+	</form>
 </section>
 
 <style>
-    h1 {
-        text-align: center;
-        font-size: min(10vh, 14vw);
-        line-height: 0.85;
-    }
+	h1 {
+		text-align: center;
+		font-size: min(10vh, 14vw);
+		line-height: 0.85;
+	}
 
-    h2 {
-        font-weight: lighter;
-        margin-top: 1rem;
-        align-self: center;
-        text-align: center;
-        font-size: min(2.5vh, 5vw);
-    }
+	h2 {
+		font-weight: lighter;
+		margin-top: 1rem;
+		align-self: center;
+		text-align: center;
+		font-size: min(2.5vh, 5vw);
+	}
 
-    #chatbox {
-        position: fixed;
-        top: 22vh;
-        bottom: 2vh;
-        width: min(35rem, 100vw - 2rem);
-        display: flex;
-        flex-direction: column;
-    }
+	#chatbox {
+		position: fixed;
+		top: 22vh;
+		bottom: 2vh;
+		width: min(35rem, 100vw - 2rem);
+		display: flex;
+		flex-direction: column;
+	}
 
-    #chatbox-messages {
-        border-radius: 20px 20px 0px 0px;
-        width: 100%;
-        height: 100%;
-    }
+	#chatbox-messages {
+		border-radius: 20px 20px 0px 0px;
+		width: 100%;
+		height: 100%;
+		overflow-y: scroll;
+	}
 
-    #chatbox-messages img {
-        position: absolute;
-        border-radius: 20px 20px 0px 0px;
-        height: calc(100% - 4rem);        
-        width: min(35rem, 100vw - 2rem);
-        object-fit: cover;
-        filter: saturate(20%) brightness(65%) contrast(130%);
-        opacity: 90%;
-        z-index: -1;
-    }
+	#chatbox-messages img {
+		position: absolute;
+		border-radius: 20px 20px 0px 0px;
+		height: calc(100% - 4rem);
+		width: min(35rem, 100vw - 2rem);
+		object-fit: cover;
+		filter: saturate(20%) brightness(65%) contrast(130%);
+		opacity: 90%;
+		z-index: -1;
+	}
 
-    #message-bar {
-        background-color: hsl(220, 20%, 13%);;
-        width: calc(100% - 1.4rem);
-        height: 2.6rem;
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        padding: 0.7rem;
-        border-radius: 0px 0px 20px 20px;
-    }
+	#message-bar {
+		background-color: hsl(220, 20%, 13%);
+		width: calc(100% - 1.4rem);
+		height: 2.6rem;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		padding: 0.7rem;
+		border-radius: 0px 0px 20px 20px;
+	}
 
-    #message-bar #text-box {
-        width: 100%;
-        height: 2rem;
-        margin-right: 0.1rem;
-        border-radius: 20px;
-        color: black;
-        padding: 0.2rem 0.5rem 0.2rem 0.5rem;
-        font-size: 1rem;
-        background-color: hsl(60, 20%, 95%);
-        outline: none;
-    }
+	#message-bar #text-box {
+		width: 100%;
+		height: 2rem;
+		margin-right: 0.1rem;
+		border-radius: 20px;
+		color: black;
+		padding: 0.2rem 0.5rem 0.2rem 0.5rem;
+		font-size: 1rem;
+		background-color: hsl(60, 20%, 95%);
+		outline: none;
+	}
 
-    #message-bar button {
-        height: 2.6rem;
-        width: 4rem;
-        margin-left: 0.1rem;
-        border-radius: 20px;
-        background-color: hsl(220, 15%, 40%);
-        padding: 0.3rem;
-    }
+	#message-bar button {
+		height: 2.6rem;
+		width: 4rem;
+		margin-left: 0.1rem;
+		border-radius: 20px;
+		background-color: hsl(220, 15%, 40%);
+		padding: 0.3rem;
+	}
 
-    #message-bar button img {
-        object-fit: cover;
-        height: 100%;
-    }
+	#message-bar button img {
+		object-fit: cover;
+		height: 100%;
+	}
 
-    .ai-msg p {
-        font-weight: lighter;
-        background-color: hsl(254, 49%, 20%);
-        padding: 0.7rem;
-        border-radius: 20px;
-        color: white;
-        width: fit-content;
-    }
+	.ai-msg p {
+		font-weight: lighter;
+		background-color: hsl(254, 49%, 20%);
+		padding: 0.7rem;
+		border-radius: 20px 20px 20px 0px;
+		color: white;
+		width: fit-content;
+	}
 
-    .ai-msg {
-        margin: 1rem 7rem 1rem 1rem;
-    }
+	.ai-msg {
+		margin: 1rem 7rem 1rem 1rem;
+	}
 
-    .user-msg p {
-        font-weight: lighter;
-        background-color: hsl(125, 76%, 39%);
-        padding: 0.7rem;
-        border-radius: 20px;
-        color: white;
-        width: fit-content;
-    }
+	.user-msg p {
+		font-weight: lighter;
+		background-color: hsl(125, 76%, 39%);
+		padding: 0.7rem;
+		border-radius: 20px 20px 0px 20px;
+		color: white;
+		width: fit-content;
+	}
 
-    .user-msg {
-        display: flex;
-        justify-content: end;
-        flex-direction: row;
-        margin: 1rem 1rem 1rem 7rem;
-    }
+	.user-msg {
+		display: flex;
+		justify-content: end;
+		flex-direction: row;
+		margin: 1rem 1rem 1rem 7rem;
+	}
+
+	.loader-dots {
+		padding: 0.5em 2.2em 0.5em 1em;
+		border-radius: 0.3em;
+		color: #fff;
+		border: 1px solid #fff;
+		background: rgba(255, 255, 255, 0.2);
+		display: block;
+		position: fixed;
+		top: 50%;
+		left: 50%;
+		transform: translateX(-50%) translateY(-50%);
+		font:
+			300 1em/1.5 'Lato',
+			sans-serif;
+		letter-spacing: 1px;
+		&:after {
+			content: '....';
+			width: 0;
+			position: absolute;
+			overflow: hidden;
+			animation: loader-dots-animation 1s infinite;
+		}
+	}
+
+	@keyframes loader-dots-animation {
+		0% {
+			width: 0em;
+		}
+		50% {
+			width: 1.2em;
+		}
+		100% {
+			width: 0em;
+		}
+	}
 </style>
