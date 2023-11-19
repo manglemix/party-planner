@@ -10,6 +10,7 @@
     let errorFaced = false;
     let noPath = false;
     let waypoints: string[] = [];
+    let places: any[] = [];
     let mode = "";
     let lastMessage = "";
     $: if (errorFaced) {
@@ -22,27 +23,43 @@
 
     if (browser) {
         fetch("https://cb3d-35-3-152-108.ngrok-free.app/final-plan/", { method: "post", body: JSON.stringify({ sessionToken: data.sessionToken, lat: data.lat, lng: data.lng }) })
-            .then((response) => {
+            .then(async (response) => {
                 if (!response.ok) {
-                    response.text().then((text) => {
-                        console.log("Error code: " + response.status);
-                        console.log(text);
-                    });
+                    const text = await response.text();
+                    console.log("Error code: " + response.status);
+                    console.log(text);
                     errorFaced = true;
                     return;
                 }
-                response.json().then((body) => {
-                    waypoints = body["waypoints"];
-                    if (waypoints.length == 0) {
-                        noPath = true;
-                        delay(2500).then(() => {
-                            goto("/?reset=true");
-                        });
+                const body = await response.json();
+                places = body["places"];
+                if (places.length == 0) {
+                    noPath = true;
+                    delay(2500).then(() => {
+                        goto("/?reset=true");
+                    });
+                    return;
+                }
+                console.log(places);
+                let startCount = 0;
+                let i = 0;
+                while (true) {
+                    waypoints.push(places[i].waypoint);
+                    if (places[i].photoID === "") {
+                        startCount++;
+                        if (startCount >= 2) {
+                            break;
+                        }
                     }
-                    mode = body["mode"];
-                    lastMessage = body["lastMessage"];
-                    informationLoaded = true;
-                });
+                    i++;
+                    if (i >= places.length) {
+                        i = 0;
+                    }
+                }
+                mode = body["mode"];
+                lastMessage = body["lastMessage"];
+                informationLoaded = true;
+                
             })
             .catch((e) => {
                 console.log(e);
@@ -66,6 +83,13 @@
 			{lastMessage} If you want to make another plan, click
 			<a href="/?reset=true">here.</a>
 		</h2>
+
+        {#each places as place, i}
+            {#if place.photoID !== ""}
+                <h3>{place.waypoint}</h3>
+                <img src={`https://places.googleapis.com/v1/${place.photoID}/media?key=AIzaSyCD_xUKchlAhJsO70NU5Cg6XYevRPXI-c0&maxHeightPx=640&maxWidthPx=640`} alt={place.waypoint}>
+            {/if}
+        {/each}
 
         <div id="mapContainer">
             <GoogleAdvancedMap bind:url bind:waypoints bind:mode />
@@ -310,14 +334,20 @@
 		align-self: flex-start;
 	}
 
+    h3 {
+		margin-top: 1rem;
+		font-size: min(2.5vh, 3vw);
+    }
+
 	#mapContainer {
-		/* position: fixed; */
-		/* top: 12vh; */
-		/* bottom: 2vh; */
         margin-top: 1rem;
-        height: calc(100% - 15rem);
+        height: min(50rem, 100vw - 2rem);
 		width: min(50rem, 100vw - 2rem);
 		display: flex;
 		flex-direction: column;
 	}
+
+    .page {
+        min-height: 100vh;
+    }
 </style>

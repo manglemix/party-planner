@@ -31,6 +31,11 @@
 		}
 	}
 	let waitingForAI = false;
+	$: if (waitingForAI) {
+		placeholder = "Please wait...";
+	} else {
+		placeholder = "Type here";
+	}
 	let messagesJson = JSON.stringify(messages);
 	$: messagesJson = JSON.stringify(messages);
 
@@ -50,7 +55,7 @@
 			})
 			.catch((e) => {
 				console.log(e);
-				messages.push('I seemed to have faced an issue. Please try again later.');
+				messages.push('I seem to have faced an issue. Please try again later.');
 				messages = messages;
 				waitingForAI = false;
 			});
@@ -82,7 +87,7 @@
 </script>
 
 <div class="page" transition:fade|global={{ duration: 700 }}>
-	<h1>Party Planner</h1>
+	<h1>Chat-a-way</h1>
 	<h2>Create a complete plan, fit for any time, with just a simple conversation!</h2>
 
 	<section id="chatbox">
@@ -122,7 +127,6 @@
 				messages = messages;
 				currentMessage = '';
 				waitingForAI = true;
-				placeholder = 'Please wait...';
 				delay(1100).then(() => {
 					chatboxMessages.scrollTo(scrollOptions);
 				});
@@ -136,7 +140,6 @@
 						}
 					}
 					waitingForAI = false;
-					placeholder = 'Type here';
 				};
 			}}
 		>
@@ -276,5 +279,10 @@
 		justify-content: end;
 		flex-direction: row;
 		margin: 1rem 1rem 1rem 7rem;
+	}
+
+	.page {
+		position: fixed;
+		height: 100vh;
 	}
 </style>

@@ -16,7 +16,7 @@
 	let mapDiv: HTMLElement;
 	// let directionsDiv: HTMLElement;
 
-	if (browser) {
+	$: if (browser && mapDiv) {
 		const loader = new Loader({
 			apiKey: 'AIzaSyCD_xUKchlAhJsO70NU5Cg6XYevRPXI-c0',
 			version: 'weekly'
@@ -57,10 +57,10 @@
 						waypoints: waypoints.slice(1).map((value) => { return { location: value }; }),
 						travelMode,
 					})
-					.then((result) => {
+					.then((result: any) => {
 						directionsRenderer.setDirections(result);
 					})
-					.catch((e) => {
+					.catch((e: any) => {
 						alert('Could not display directions due to: ' + e);
 					});
 				// var heatMapData = [];

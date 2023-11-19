@@ -18,11 +18,9 @@
 	}
 
 	:global(.page) {
-		position: fixed;
 		width: min(50rem, 100% - 3rem);
 		align-self: center;
 		align-items: center;
-		height: 100vh;
 		/* min-height: calc(100vh - 10rem); */
 		display: flex;
 		flex-direction: column;

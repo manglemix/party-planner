@@ -11,6 +11,7 @@ export async function load(event) {
 	if (sessionToken === undefined) {
 		sessionToken = crypto.randomUUID();
 		event.cookies.set('sessionToken', sessionToken);
+		// event.cookies.delete('locations');
 	}
 
 	// let bodyJson: Record<string, any> = {
