@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { fade } from 'svelte/transition';
 	import GoogleAdvancedMap from '$lib/GoogleAdvancedMap.svelte';
 	let lat = 42.2808;
 	let lng = -83.743;
@@ -6,20 +7,22 @@
 	let url: string;
 </script>
 
-<h2>
-	Here is my <a href={url}>suggestion</a>. If you want to make another plan, click
-	<a href="/">here.</a>
-</h2>
+<div class="page" transition:fade|global={{ duration: 700 }}>
+	<h2>
+		Here is my <a href={url}>suggestion</a>. If you want to make another plan, click
+		<a href="/">here.</a>
+	</h2>
 
-<noscript>
-	<h2>You seem to have disabled javascript. I will not be able to show you the route here!</h2>
-</noscript>
+	<noscript>
+		<h2>You seem to have disabled javascript. I will not be able to show you the route here!</h2>
+	</noscript>
 
-{#if lat && lng}
-	<div id="mapContainer">
-		<GoogleAdvancedMap {lat} {lng} bind:url />
-	</div>
-{/if}
+	{#if lat && lng}
+		<div id="mapContainer">
+			<GoogleAdvancedMap {lat} {lng} bind:url />
+		</div>
+	{/if}
+</div>
 
 <style>
 	h2 {

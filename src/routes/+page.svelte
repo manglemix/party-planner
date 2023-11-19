@@ -5,19 +5,25 @@
 	import chatbg from '$lib/assets/chat-background.png';
 	import send from '$lib/assets/send.png';
 	import loadingMsg from '$lib/assets/loading-msg.gif';
-	import { scale } from 'svelte/transition';
+	import { scale, fade } from 'svelte/transition';
 	import { quintOut } from 'svelte/easing';
 
-	const scrollOptions: ScrollToOptions = { top: 100000000, behavior: "smooth" };
+	const scrollOptions: ScrollToOptions = { top: 100000000, behavior: 'smooth' };
 
 	export let data;
 	export let form;
+	let placeholder = 'Type here';
 	let messages = [
 		"Need help with deciding what to eat? Tell me what you like and I will pick out some meals you can eat right now in your area. When we're done, I can even plan out your route!"
 	];
 	$: {
 		if (form) {
 			messages = form.messages;
+			if (browser && form.done) {
+				delay(3000).then(() => {
+					goto('/plan');
+				});
+			}
 		} else if (data.messages) {
 			messages = data.messages;
 		}
@@ -53,70 +59,76 @@
 	const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 	let chatboxMessages: HTMLElement;
-    const scaleTransition = { duration: 400, delay: 0, opacity: 1, start: 0, easing: quintOut };
+	const scaleTransition = { duration: 400, delay: 0, opacity: 1, start: 0, easing: quintOut };
 </script>
 
-<h1>Party Planner</h1>
-<h2>Create a complete plan, fit for any time, with just a simple conversation!</h2>
+<div class="page" transition:fade|global={{ duration: 700 }}>
+	<h1>Party Planner</h1>
+	<h2>Create a complete plan, fit for any time, with just a simple conversation!</h2>
 
-<section id="chatbox">
-	<div id="chatbox-messages" bind:this={chatboxMessages}>
-		<img src={chatbg} alt="chat background" />
-		{#each messages as message, i}
-			{#if i % 2 == 0}
-				<div class="ai-msg">
-					<p transition:scale|global={scaleTransition}>{message}</p>
-				</div>
-			{:else}
-				<div class="user-msg">
-					<p transition:scale|global={scaleTransition}>{message}</p>
-				</div>
+	<section id="chatbox">
+		<div id="chatbox-messages" bind:this={chatboxMessages}>
+			<img src={chatbg} alt="chat background" />
+			{#each messages as message, i}
+				{#if i % 2 == 0}
+					<div class="ai-msg">
+						<p transition:scale|global={scaleTransition}>{message}</p>
+					</div>
+				{:else}
+					<div class="user-msg">
+						<p transition:scale|global={scaleTransition}>{message}</p>
+					</div>
+				{/if}
+			{/each}
+			{#if waitingForAI}
+				{#await delay(1000) then}
+					<div class="ai-msg">
+						<div transition:scale={scaleTransition}>
+							<img src={loadingMsg} alt="loading message" />
+						</div>
+					</div>
+				{/await}
 			{/if}
-		{/each}
-		{#if waitingForAI}
-			{#await delay(1000) then}
-                <div class="ai-msg">
-                    <div transition:scale={scaleTransition}><img src={loadingMsg} alt="loading message"></div>
-                </div>
-			{/await}
-		{/if}
-	</div>
-	<form
-		id="message-bar"
-		method="post"
-		use:enhance={() => {
-			messages.push(currentMessage);
-			messages = messages;
-			currentMessage = '';
-			waitingForAI = true;
-			delay(1100).then(() => {
-				chatboxMessages.scrollTo(scrollOptions);
-			});
-			return async ({ result }) => {
-				waitingForAI = false;
-				if (result.type === 'redirect') {
-					goto(result.location);
-				} else {
-					await applyAction(result);
-				}
-			};
-		}}
-	>
-		<input type="hidden" name="lat" value={lat} />
-		<input type="hidden" name="lng" value={lng} />
-		<input type="hidden" name="messages" bind:value={messagesJson} />
-		<input
-			type="text"
-			id="text-box"
-			name="user-message"
-			required
-			placeholder="Type here"
-			bind:value={currentMessage}
-			disabled={waitingForAI}
-		/>
-		<button type="submit" disabled={waitingForAI}><img src={send} alt="send" /></button>
-	</form>
-</section>
+		</div>
+		<form
+			id="message-bar"
+			method="post"
+			use:enhance={() => {
+				messages.push(currentMessage);
+				messages = messages;
+				currentMessage = '';
+				waitingForAI = true;
+				placeholder = 'Please wait...';
+				delay(1100).then(() => {
+					chatboxMessages.scrollTo(scrollOptions);
+				});
+				return async ({ result }) => {
+					waitingForAI = false;
+					placeholder = 'Type here';
+					if (result.type === 'redirect') {
+						goto(result.location);
+					} else {
+						await applyAction(result);
+					}
+				};
+			}}
+		>
+			<input type="hidden" name="lat" value={lat} />
+			<input type="hidden" name="lng" value={lng} />
+			<input type="hidden" name="messages" bind:value={messagesJson} />
+			<input
+				type="text"
+				id="text-box"
+				name="user-message"
+				required
+				{placeholder}
+				bind:value={currentMessage}
+				disabled={waitingForAI}
+			/>
+			<button type="submit" disabled={waitingForAI}><img src={send} alt="send" /></button>
+		</form>
+	</section>
+</div>
 
 <style>
 	h1 {
@@ -206,18 +218,18 @@
 		width: fit-content;
 	}
 
-    .ai-msg > div {
+	.ai-msg > div {
 		background-color: hsl(254, 49%, 20%);
 		padding: 0.7rem;
 		border-radius: 20px 20px 20px 0px;
-        width: fit-content;
-    }
+		width: fit-content;
+	}
 
-    .ai-msg > div > img {
-        filter: saturate(0%) brightness(100%) contrast(0%);
-        height: 1.5rem;
+	.ai-msg > div > img {
+		filter: saturate(0%) brightness(100%) contrast(0%);
+		height: 1.5rem;
 		object-fit: cover;
-    }
+	}
 
 	.ai-msg {
 		margin: 1rem 7rem 1rem 1rem;

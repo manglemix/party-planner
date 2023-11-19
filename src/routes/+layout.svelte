@@ -1,6 +1,4 @@
-<div id="page">
-	<slot />
-</div>
+<slot />
 
 <style>
 	@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@200;400;700&display=swap');
@@ -19,7 +17,7 @@
 		background-color: hsl(210, 60%, 3%);
 	}
 
-	#page {
+	:global(.page) {
 		position: fixed;
 		width: min(50rem, 100% - 3rem);
 		align-self: center;

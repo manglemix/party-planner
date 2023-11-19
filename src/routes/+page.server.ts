@@ -68,8 +68,11 @@ export const actions = {
 		const responseJson = await response.json();
 
 		messages.push(responseJson['msg']);
+
 		return {
-			messages
+			messages,
+			// done: responseJson["done"] ?? false
+			done: true
 		};
 	}
 };
