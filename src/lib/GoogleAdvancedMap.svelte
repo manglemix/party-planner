@@ -35,16 +35,16 @@
 				const directionsService = new DirectionsService();
 				const directionsRenderer = new DirectionsRenderer({
 					draggable: true,
-					map,
+					map
 					// panel: directionsDiv
 				});
 				let travelMode;
 
-				if (mode === "walking") {
+				if (mode === 'walking') {
 					travelMode = TravelMode.WALKING;
-				} else if (mode === "bicycling") {
+				} else if (mode === 'bicycling') {
 					travelMode = TravelMode.BICYCLING;
-				} else if (mode === "transit") {
+				} else if (mode === 'transit') {
 					travelMode = TravelMode.TRANSIT;
 				} else {
 					travelMode = TravelMode.DRIVING;
@@ -54,8 +54,10 @@
 					.route({
 						origin: waypoints[0],
 						destination: waypoints[0],
-						waypoints: waypoints.slice(1).map((value) => { return { location: value }; }),
-						travelMode,
+						waypoints: waypoints.slice(1).map((value) => {
+							return { location: value };
+						}),
+						travelMode
 					})
 					.then((result: any) => {
 						directionsRenderer.setDirections(result);
@@ -82,7 +84,8 @@
 	}
 </script>
 
-<div bind:this={mapDiv} style="width: 100%; height: 100%;" id="map"/>
+<div bind:this={mapDiv} style="width: 100%; height: 100%;" id="map" />
+
 <!-- <div bind:this={directionsDiv} id="directions" /> -->
 
 <!-- <div id="mapContainer">
@@ -101,12 +104,11 @@
 
 	/* #directions {
 		/* width: 0px; */
-		/* overflow-x: hidden; */
-		/* display: none; */
-		/* overflow-y: scroll;
+	/* overflow-x: hidden; */
+	/* display: none; */
+	/* overflow-y: scroll;
         background-color: aliceblue;
         padding: 0.5rem; */
-	
 
 	/* #mapContainer #directions :global(*) {
         color: black;

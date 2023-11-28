@@ -4,9 +4,9 @@ import { error, redirect } from '@sveltejs/kit';
 // const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 export async function load(event) {
-	if (event.url.searchParams.get("reset")) {
+	if (event.url.searchParams.get('reset')) {
 		event.cookies.delete('sessionToken');
-		throw redirect(307, "/");
+		throw redirect(307, '/');
 	}
 	let sessionToken = event.cookies.get('sessionToken');
 	if (sessionToken === undefined) {
@@ -32,7 +32,7 @@ export async function load(event) {
 	// 	messages.push('I seemed to have faced an issue. Please try again later.');
 	// 	return { errMsg: 'failed to fetch', messages };
 	// }
-	
+
 	// const responseJson = await response.json();
 	// messages.push(responseJson['msg']);
 
@@ -88,13 +88,13 @@ export const actions = {
 
 		const responseJson = await response.json();
 
-		if (responseJson["msg"]) {
+		if (responseJson['msg']) {
 			messages.push(responseJson['msg']);
 		}
 
 		return {
 			messages,
-			done: responseJson["done"] ?? false
+			done: responseJson['done'] ?? false
 		};
 	}
 };

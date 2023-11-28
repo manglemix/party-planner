@@ -18,12 +18,12 @@
 	$: {
 		if (form) {
 			if (form.done) {
-				goto("/plan");
+				goto('/plan');
 			} else {
 				messages = form.messages;
 			}
-		// } else if (data.messages) {
-		// 	messages = data.messages;
+			// } else if (data.messages) {
+			// 	messages = data.messages;
 		}
 		if (chatboxMessages) {
 			delay(100).then(() => {
@@ -33,9 +33,9 @@
 	}
 	let waitingForAI = false;
 	$: if (waitingForAI) {
-		placeholder = "Please wait...";
+		placeholder = 'Please wait...';
 	} else {
-		placeholder = "Type here";
+		placeholder = 'Type here';
 	}
 	let messagesJson = JSON.stringify(messages);
 	$: messagesJson = JSON.stringify(messages);
@@ -43,12 +43,13 @@
 	if (browser && messages.length == 0) {
 		waitingForAI = true;
 		fetch(`https://${PUBLIC_BACKEND_HOST}/new-message/`, {
-				method: 'post',
-				body: JSON.stringify({
-					userMessage: "",
-					sessionToken: data.sessionToken
-				})
-			}).then(async (response) => {
+			method: 'post',
+			body: JSON.stringify({
+				userMessage: '',
+				sessionToken: data.sessionToken
+			})
+		})
+			.then(async (response) => {
 				const responseJson = await response.json();
 				messages.push(responseJson['msg']);
 				messages = messages;
